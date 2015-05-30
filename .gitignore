@@ -1,4 +1,5 @@
 bin
+main*
 
 # Compiled Object files
 *.slo
