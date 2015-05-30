@@ -1,18 +1,25 @@
 # depslib dependency file v1.0
-1432974550 source:/home/stoyan/workspace/memory_mapped_file/main.cpp
+1433007925 source:/home/stoyan/workspace/memory_mapped_file/main.cpp
 	<iostream>
 	<memory>
 	<vector>
 	"memory_mapped_file.h"
 
-1432977584 source:/home/stoyan/workspace/memory_mapped_file/memory_mapped_file.cpp
+1433008781 source:/home/stoyan/workspace/memory_mapped_file/memory_mapped_file.cpp
 	"memory_mapped_file.h"
 	<sys/stat.h>
 	<fcntl.h>
 
-1432977458 /home/stoyan/workspace/memory_mapped_file/memory_mapped_file.h
+1433007843 /home/stoyan/workspace/memory_mapped_file/memory_mapped_file.h
 	"others.h"
-
-1432977595 /home/stoyan/workspace/memory_mapped_file/others.h
 	<memory>
+	<exception>
+
+1433007548 /home/stoyan/workspace/memory_mapped_file/others.h
+	<memory>
+	<exception>
+	<cstdio>
+
+1433008161 source:/home/stoyan/workspace/memory_mapped_file/others.cpp
+	"others.h"
 

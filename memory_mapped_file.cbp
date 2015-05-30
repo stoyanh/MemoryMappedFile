@@ -35,6 +35,7 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="memory_mapped_file.cpp" />
 		<Unit filename="memory_mapped_file.h" />
+		<Unit filename="others.cpp" />
 		<Unit filename="others.h" />
 		<Extensions>
 			<envvars />
