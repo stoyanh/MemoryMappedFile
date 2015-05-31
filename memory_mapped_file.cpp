@@ -53,6 +53,9 @@ void MemMappedFile::loadPage(uint64_t pos)
     uint64_t pageToFlush = pmanager.pageToRemove(pageNumber);
     if(pageToFlush != INVALID_PAGE_NUMBER) {
         flush(pageToFlush);
+        uint64_t oldSize = pmanager.getPageSize(pageToFlush);
+        pmanager.reusePage(pageToFlush, pageNumber, pageStart,
+                            pageSize != oldSize ? pageSize : INVALID_PAGE_SIZE);
     } else {
         pmanager.reservePage(pageNumber, pageStart, pageSize);
     }

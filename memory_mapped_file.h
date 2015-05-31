@@ -5,7 +5,6 @@
 #include <memory>
 #include <exception>
 
-
 class MemMappedFile
 {
 public:

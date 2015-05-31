@@ -38,13 +38,31 @@ uint64_t PagesManager::pageToRemove(uint64_t pageNumber) const
 
 void PagesManager::reservePage(uint64_t pageNumber, uint64_t start, uint64_t size)
 {
-    int pos = nextFreePos >= MAX_PAGES ? LAST_PAGE : nextFreePos++;
+    int pos = (nextFreePos >= MAX_PAGES) ? LAST_PAGE : nextFreePos++;
     pages[pos].pageNumber = pageNumber;
     pages[pos].start = start;
     pages[pos].size = size;
     pages[pos].data = std::unique_ptr<char[]>(new char[size]);
 
     orderedPages[pos] = pageNumber;
+    moveFront(pos);
+}
+
+void PagesManager::reusePage(
+    uint64_t pageNumber,
+    uint64_t newNumber,
+    uint64_t newStart,
+    uint64_t newSize)
+{
+    int pos = findPageIndex(pageNumber);
+    pages[pos].pageNumber = newNumber;
+    pages[pos].start = newStart;
+    pages[pos].size = (newSize != INVALID_PAGE_SIZE) ? newSize : pages[pos].size;
+    if(pages[pos].size == newSize) {
+        pages[pos].data = std::unique_ptr<char[]>(new char[newSize]);
+    }
+
+    orderedPages[pos] = newNumber;
     moveFront(pos);
 }
 
