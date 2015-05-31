@@ -5,13 +5,6 @@
 #include <exception>
 #include <cstdio>
 
-const uint64_t DEFAULT_MAX_IN_MEM_SIZE = 1 << 27; /// 128mb
-const uint64_t PAGE_SIZE = 1 << 24; /// 16mb
-const uint64_t MAX_PAGES = DEFAULT_MAX_IN_MEM_SIZE /PAGE_SIZE;
-const uint64_t LAST_PAGE = MAX_PAGES - 1;
-const uint64_t INVALID_PAGE_NUMBER = -1;
-const uint64_t INVALID_PAGE_SIZE = -1;
-
 struct FileDeleter {
     void operator()(FILE* file) {
         fclose(file);
@@ -44,13 +37,21 @@ struct Page {
     std::unique_ptr<char[]> data;
 };
 
-struct Modified {
-    int size;
-    uint64_t pages[MAX_PAGES];
-};
 
 class PagesManager
 {
+    friend class MemMappedFile;
+    const static uint64_t DEFAULT_MAX_IN_MEM_SIZE = 1 << 27; /// 128mb
+    const static uint64_t PAGE_SIZE = 1 << 24; /// 16mb
+    const static uint64_t MAX_PAGES = DEFAULT_MAX_IN_MEM_SIZE / PAGE_SIZE;
+    const static uint64_t LAST_PAGE = MAX_PAGES - 1;
+    const static uint64_t INVALID_PAGE_NUMBER = -1;
+    const static uint64_t INVALID_PAGE_SIZE = -1;
+
+    struct Modified {
+        int size;
+        uint64_t pages[MAX_PAGES];
+    };
 public:
     PagesManager();
     bool isLoaded(uint64_t pageNumber) const;

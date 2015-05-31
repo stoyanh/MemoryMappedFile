@@ -16,7 +16,7 @@ CharProxy::operator char()
 
 CharProxy& CharProxy::operator=(const CharProxy& rhs)
 {
-    if(this != &rhs) {
+    if(byte != rhs.byte && this != &rhs) {
         byte = rhs.byte;
         modified = true;
     }
@@ -25,7 +25,7 @@ CharProxy& CharProxy::operator=(const CharProxy& rhs)
 
 CharProxy& CharProxy::operator=(const char& rhs)
 {
-    if(&byte != &rhs) {
+    if(byte != rhs && &byte != &rhs) {
         byte = rhs;
         modified = true;
     }
@@ -76,7 +76,7 @@ void PagesManager::reusePage(
     moveFront(LAST_PAGE);
 }
 
-Modified PagesManager::getAllModifiedPages() const
+PagesManager::Modified PagesManager::getAllModifiedPages() const
 {
     Modified modifiedPages;
     modifiedPages.size = 0;

@@ -8,7 +8,7 @@
 class MemMappedFile
 {
 public:
-    MemMappedFile(const char* filePath, uint64_t maxSize = DEFAULT_MAX_IN_MEM_SIZE);
+    MemMappedFile(const char* filePath);
     ~MemMappedFile();
     MemMappedFile& operator=(const MemMappedFile&) = delete;
     MemMappedFile(const MemMappedFile&) = delete;
