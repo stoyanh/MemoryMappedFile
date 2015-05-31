@@ -13,13 +13,14 @@ public:
     MemMappedFile& operator=(const MemMappedFile&) = delete;
     MemMappedFile(const MemMappedFile&) = delete;
 
-    char& operator[](uint64_t pos);
+    CharProxy operator[](uint64_t pos);
     uint64_t size() const;
 
 private:
     bool inMemory(uint64_t pos) const;
     void loadPage(uint64_t pos);
     void flush(uint64_t pageNumber);
+    void flushAll();
 
     uint64_t maxInMemSize;
     FileInfo fileInfo;

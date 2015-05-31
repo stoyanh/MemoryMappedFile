@@ -23,6 +23,19 @@ struct FileInfo {
     uint64_t fileSize;
 };
 
+class CharProxy
+{
+public:
+    CharProxy(char& byte, bool& modified):
+         byte(byte), modified(modified){}
+    operator char();
+    CharProxy& operator=(const CharProxy& rhs);
+    CharProxy& operator=(const char& rhs);
+private:
+    char& byte;
+    bool& modified;
+};
+
 struct Page {
     uint64_t start;
     uint64_t size;
@@ -31,16 +44,9 @@ struct Page {
     std::unique_ptr<char[]> data;
 };
 
-class CharProxy
-{
-public:
-    CharProxy(char& byte, bool* modified):
-         byte(byte), modified(modified){}
-    operator char();
-    char& operator=(const char& rhs);
-private:
-    char& byte;
-    bool* modified;
+struct Modified {
+    int size;
+    uint64_t pages[MAX_PAGES];
 };
 
 class PagesManager
@@ -48,7 +54,7 @@ class PagesManager
 public:
     PagesManager();
     bool isLoaded(uint64_t pageNumber) const;
-    uint64_t pageToRemove(uint64_t pageNumber) const;
+    uint64_t pageToRemove() const;
     void reservePage(uint64_t pageNumber, uint64_t start, uint64_t size);
     void reusePage(
         uint64_t pageNumber,
@@ -57,8 +63,12 @@ public:
         uint64_t newSize = INVALID_PAGE_SIZE);
     uint64_t lastAccessed() const;
     char& getByte(uint64_t pageNumber, uint64_t posInPage);
+    bool& getFlag(uint64_t pageNumber);
     char* getPageData(uint64_t pageNumber);
     uint64_t getPageSize(uint64_t pageNumber) const;
+    bool isModified(uint64_t pageNumber)const;
+    void setModifiedFalse(uint64_t pageNumber);
+    Modified getAllModifiedPages() const;
 private:
     void moveFront(int index);
     int findPageIndex(uint64_t pageNumber) const;

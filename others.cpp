@@ -14,13 +14,22 @@ CharProxy::operator char()
     return byte;
 }
 
-char& CharProxy::operator=(const char& rhs)
+CharProxy& CharProxy::operator=(const CharProxy& rhs)
 {
-    if(&byte == &rhs) {
-        return byte;
+    if(this != &rhs) {
+        byte = rhs.byte;
+        modified = true;
     }
-    byte = rhs;
-    *modified = true;
+    return *this;
+}
+
+CharProxy& CharProxy::operator=(const char& rhs)
+{
+    if(&byte != &rhs) {
+        byte = rhs;
+        modified = true;
+    }
+    return *this;
 }
 
 PagesManager::PagesManager():
@@ -28,22 +37,22 @@ PagesManager::PagesManager():
 {
 }
 
-uint64_t PagesManager::pageToRemove(uint64_t pageNumber) const
+uint64_t PagesManager::pageToRemove() const
 {
     if(nextFreePos >= MAX_PAGES) {
-        return pages[LAST_PAGE].pageNumber;
+        return orderedPages[LAST_PAGE];
     }
-    return -1;
+    return INVALID_PAGE_NUMBER;
 }
 
 void PagesManager::reservePage(uint64_t pageNumber, uint64_t start, uint64_t size)
 {
     int pos = (nextFreePos >= MAX_PAGES) ? LAST_PAGE : nextFreePos++;
+    pages[pos].modified = false;
     pages[pos].pageNumber = pageNumber;
     pages[pos].start = start;
     pages[pos].size = size;
     pages[pos].data = std::unique_ptr<char[]>(new char[size]);
-
     orderedPages[pos] = pageNumber;
     moveFront(pos);
 }
@@ -55,6 +64,7 @@ void PagesManager::reusePage(
     uint64_t newSize)
 {
     int pos = findPageIndex(pageNumber);
+    pages[pos].modified = false;
     pages[pos].pageNumber = newNumber;
     pages[pos].start = newStart;
     pages[pos].size = (newSize != INVALID_PAGE_SIZE) ? newSize : pages[pos].size;
@@ -62,8 +72,21 @@ void PagesManager::reusePage(
         pages[pos].data = std::unique_ptr<char[]>(new char[newSize]);
     }
 
-    orderedPages[pos] = newNumber;
-    moveFront(pos);
+    orderedPages[LAST_PAGE] = newNumber;
+    moveFront(LAST_PAGE);
+}
+
+Modified PagesManager::getAllModifiedPages() const
+{
+    Modified modifiedPages;
+    modifiedPages.size = 0;
+    for(int i = 0; i < nextFreePos; ++i) {
+        if(pages[i].modified) {
+            modifiedPages.pages[modifiedPages.size++] = orderedPages[i];
+        }
+    }
+
+    return modifiedPages;
 }
 
 char& PagesManager::getByte(uint64_t pageNumber, uint64_t posInPage)
@@ -91,6 +114,9 @@ void PagesManager::moveFront(int index)
 
 uint64_t PagesManager::lastAccessed() const
 {
+    if(nextFreePos <= 0) {
+        return INVALID_PAGE_NUMBER;
+    }
     return orderedPages[0];
 }
 
@@ -104,6 +130,24 @@ uint64_t PagesManager::getPageSize(uint64_t pageNumber) const
 {
     int index = findPageIndex(pageNumber);
     return pages[index].size;
+}
+
+bool PagesManager::isModified(uint64_t pageNumber) const
+{
+    int index = findPageIndex(pageNumber);
+    return pages[index].modified;
+}
+
+void PagesManager::setModifiedFalse(uint64_t pageNumber)
+{
+    int index = findPageIndex(pageNumber);
+    pages[index].modified = false;
+}
+
+bool& PagesManager::getFlag(uint64_t pageNumber)
+{
+    int index = findPageIndex(pageNumber);
+    return pages[index].modified;
 }
 
 int PagesManager::findPageIndex(uint64_t pageNumber) const

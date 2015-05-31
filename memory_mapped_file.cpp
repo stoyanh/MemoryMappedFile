@@ -15,7 +15,7 @@ MemMappedFile::MemMappedFile(const char* filePath, uint64_t maxSize):
 
 MemMappedFile::~MemMappedFile()
 {
-    flush(pmanager.lastAccessed());
+    flushAll();
 }
 
 uint64_t MemMappedFile::size() const
@@ -25,12 +25,24 @@ uint64_t MemMappedFile::size() const
 
 void MemMappedFile::flush(uint64_t pageNumber)
 {
+    if(pageNumber == INVALID_PAGE_NUMBER || !pmanager.isModified(pageNumber)) {
+        return;
+    }
     char* data = pmanager.getPageData(pageNumber);
     uint64_t pageSize = pmanager.getPageSize(pageNumber);
     fseek(file.get(), pageNumber * PAGE_SIZE, SEEK_SET);
     uint64_t bytesWritten = fwrite(data, sizeof(char), pageSize, file.get());
     if(bytesWritten < pageSize) {
         throw std::runtime_error("Could write to file !");
+    }
+    pmanager.setModifiedFalse(pageNumber);
+}
+
+void MemMappedFile::flushAll()
+{
+    Modified modifiedPages = pmanager.getAllModifiedPages();
+    for(int i = 0; i < modifiedPages.size; ++i) {
+        flush(modifiedPages.pages[i]);
     }
 }
 
@@ -48,9 +60,9 @@ void MemMappedFile::loadPage(uint64_t pos)
     if(pageStart + PAGE_SIZE >= fileInfo.fileSize) {
         pageSize = fileInfo.fileSize - pageStart;
     } else {
-        pageSize = pageStart + PAGE_SIZE;
+        pageSize = PAGE_SIZE;
     }
-    uint64_t pageToFlush = pmanager.pageToRemove(pageNumber);
+    uint64_t pageToFlush = pmanager.pageToRemove();
     if(pageToFlush != INVALID_PAGE_NUMBER) {
         flush(pageToFlush);
         uint64_t oldSize = pmanager.getPageSize(pageToFlush);
@@ -68,7 +80,7 @@ void MemMappedFile::loadPage(uint64_t pos)
     }
 }
 
-char& MemMappedFile::operator[](uint64_t pos)
+CharProxy MemMappedFile::operator[](uint64_t pos)
 {
     if(pos < 0 || pos >= fileInfo.fileSize) {
         throw std::out_of_range("Attempt to access value out of the valid range !");
@@ -79,5 +91,5 @@ char& MemMappedFile::operator[](uint64_t pos)
 
     uint64_t pageNumber = pos / PAGE_SIZE;
     uint64_t posInPage = pos % PAGE_SIZE;
-    return pmanager.getByte(pageNumber, posInPage);
+    return CharProxy(pmanager.getByte(pageNumber, posInPage), pmanager.getFlag(pageNumber));
 }
